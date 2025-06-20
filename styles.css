@@ -1,0 +1,143 @@
+/* * {
+    box-sizing: border-box;
+} */
+
+body {
+    padding: 0 1em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+header {
+    height: 10vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+h1 {
+    font-family: "Archivo Black", "Arial", san-serif;
+    font-size: 1.5em;
+}
+
+h2 {
+    font-family: "Archivo Black", "Arial", san-serif;
+}
+
+p {
+    font-family: "Lato", "Arial", san-serif;
+}
+
+
+/* About Section */
+
+.about-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.about-section img {
+    max-width: 100%;
+    object-fit: cover;
+}
+
+/* Resume Button */
+
+.resume-button {
+    width: fit-content;
+    color: black;
+    padding: 0.5em 1em;
+    text-decoration: none;
+    border: 1px solid black;
+    border-radius: 2em;
+    margin-bottom: 2em;
+}
+
+.resume-button:hover {
+    background-color: #157ea8;
+}
+
+
+/* Skills Section */
+
+.skills-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2em;
+}
+
+.skills-box {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1em;
+    width: 90%;
+}
+
+.skill-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.skill-icon img {
+    width: 70%;
+}
+
+.skill-icon p {
+    font-weight: bold;
+}
+
+/* Projects Section */
+
+.projects-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.project {
+    display: flex;
+    height: fit-content;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3em;
+}
+
+.project img {
+    width: 50%;
+}
+
+.project-text {
+    width: 45%;
+}
+
+.project-text h3, .project-text p {
+    margin: 0;
+}
+
+
+/* Desktop View */
+@media (min-width: 1024px) {
+    .about-section {
+        flex-direction: row;
+        gap: 10%;
+        justify-content: center;
+        margin: 3em 0; 
+    }
+
+    .about-section img {
+        width: 40%;
+    }
+
+    .about-section p {
+        width: 40%;
+    }
+
+}
+
+
+
