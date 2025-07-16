@@ -1,32 +1,67 @@
-/* * {
-    box-sizing: border-box;
-} */
-
 body {
-    padding: 0 1em;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    background-color: black;
+    color: white;
+    font-family: "Libre Franklin", san-serif;
+    padding: 0 1rem;
 }
 
 header {
-    height: 10vh;
+    position: relative;
+}
+
+.header-container {
+    margin: 1rem 0;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
 }
 
-h1 {
-    font-family: "Archivo Black", "Arial", san-serif;
-    font-size: 1.5em;
+.name {
+    font-size: 1rem;
+    font-weight: normal;
+    margin: 0;
 }
 
-h2 {
-    font-family: "Archivo Black", "Arial", san-serif;
+#checkbox {
+    display: none;
 }
 
-p {
-    font-family: "Lato", "Arial", san-serif;
+.hamburger {
+    border: none;
+    color: white;
+    background: local;
+}
+
+.navigation {
+    background-color: rgb(84, 83, 83);
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    display: flex;
+    opacity: .9;
+    pointer-events: none;
+    transition: max-height 0.5s ease;
+    overflow: hidden;
+    box-sizing: border-box;
+    gap: 1rem;
+    max-height: 0;
+}
+
+
+#checkbox:checked ~ .navigation {
+    pointer-events: auto;
+    max-height: 300px;
+} 
+
+
+.navigation a {
+    text-decoration: none;
+    padding: .5rem;
+    color: white;
+    margin: 0 2rem;
 }
 
 
@@ -36,6 +71,7 @@ p {
     display: flex;
     flex-direction: column;
     align-items: center;
+    z-index: -2;
 }
 
 .about-section img {
@@ -43,37 +79,49 @@ p {
     object-fit: cover;
 }
 
-/* Resume Button */
+/* Projects Section */
 
-.resume-button {
-    width: fit-content;
-    color: black;
-    padding: 0.5em 1em;
-    text-decoration: none;
-    border: 1px solid black;
-    border-radius: 2em;
-    margin-bottom: 2em;
+.projects-header {
+    text-align: center;
+}
+.projects-header h2 {
+    font-weight: normal;
 }
 
-.resume-button:hover {
-    background-color: #157ea8;
+.projects-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+}
+
+.project img {
+    width: 100%;
+}
+
+.project-text {
+    width: 100%;
+    margin: .5rem 0;
+}
+
+.project-text h3, .project-text p {
+    margin: .5rem 0;
 }
 
 
 /* Skills Section */
 
-.skills-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 2em;
+.skills-header {
+    text-align: center;
 }
 
-.skills-box {
+.skills-header h2 {
+    font-weight: normal;
+}
+
+.skills-section {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1em;
-    width: 90%;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
 }
 
 .skill-icon {
@@ -84,58 +132,82 @@ p {
 }
 
 .skill-icon img {
-    width: 70%;
-}
-
-.skill-icon p {
-    font-weight: bold;
-}
-
-/* Projects Section */
-
-.projects-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.project {
-    display: flex;
-    height: fit-content;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 3em;
-}
-
-.project img {
     width: 50%;
 }
 
-.project-text {
-    width: 45%;
-}
 
-.project-text h3, .project-text p {
-    margin: 0;
-}
+
 
 
 /* Desktop View */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
+    body {
+        padding: 0 3rem;
+    }
+
+    /* Header changes */
+    .header-container {
+        margin: 1rem 0;
+    }
+
+    .hamburger {
+        display: none;
+    }
+
+    .navigation {
+        max-height: 300px;
+        position: relative;
+        flex-direction: row;
+        opacity: 1;
+        pointer-events: auto;
+        background-color: transparent;
+    }
+
+    .navigation a {
+        text-decoration: none;
+        color: white;
+        margin-left: 2rem;
+    }
+
+    /* About me section changes */
     .about-section {
         flex-direction: row;
-        gap: 10%;
-        justify-content: center;
-        margin: 3em 0; 
+        justify-content: space-between;
+        margin: 3rem 0; 
     }
 
     .about-section img {
-        width: 40%;
+        width: 48%;
     }
 
     .about-section p {
-        width: 40%;
+        width: 48%;
+        line-height: 2rem;
     }
+
+    /* Projects section changes */
+    .projects-section {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .projects-section img {
+        max-height: 70%;
+    }
+
+    /* Skills section changes */
+    .skills-section {
+        width: 40%;
+        margin: 0 auto;
+        justify-items: center;
+        align-items: center;
+    }
+
+    .skill-icon {
+        max-width: 100%;
+    }
+
+
+
 
 }
 
