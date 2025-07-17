@@ -1,0 +1,574 @@
+---
+output:
+  pdf_document: default
+---
+
+# ECON 50A, Spring 2025
+## Name: Gerald Ramir S. Rivera
+## Email: grivera@hks.harvard.edu
+## HUID: 91637456
+## Lab: Wednesday HKS Lab
+## Date: 5/2/25
+
+\
+
+## Empirical Project Part 2
+
+\
+```{r, include = FALSE}
+### Set up
+rm(list = ls()) # optional, removes all objects from the environment
+cat('\014') # optional, clears the console
+options(scipen = 999) # optional, ensures numbers aren't reported in scientific notation 
+```
+
+```{r, include = FALSE}
+# Install packages (if necessary) and load required libraries
+
+if (!require(haven)) install.packages("haven"); library(haven)
+if (!require(ggplot2)) install.packages("ggplot2"); library(ggplot2)
+if (!require(stargazer)) install.packages("stargazer"); library(stargazer)
+if (!require(tidyverse)) install.packages("tidyverse"); library(tidyverse)
+if (!require(patchwork)) install.packages("patchwork"); library(patchwork)
+if (!require(sandwich)) install.packages("sandwich"); library(sandwich)
+if (!require(lmtest)) install.packages("lmtest"); library(lmtest)
+if (!require(randomForest)) install.packages("randomForest"); library(randomForest)
+```
+
+
+## Pre-processing
+
+```{r}
+# Read in Opportunity Atlas data
+atlas <- read_dta("atlas.dta") # Atlas data
+```
+
+First group all tracts within the zones for Anchorage's 6 high schools: Service, South, West, Bartlett, Dimond, and East.
+```{r}
+service_tracts <- c("2502", "2712", "2702", "2601", "2811", "2812", "2602", "2603", "300", "2813")
+
+south_tracts <- c("2712", "2702", "2812", "2821", "2822", "2823")
+
+west_tracts <- c("1300", "2400", "1900", "2000", "1300", "1400", "1200", "1000", "902", "901",
+                 "600", "500")
+
+bartlett_tracts <- c("400", "703", "801", "701", "702", "703", "802", "1702", "1731", "1701", "1732")
+
+dimond_tracts <- c("2302", "2303", "2501", "2712")
+
+east_tracts <- c("600", "901", "801", "902", "1601", "802", "1500", "1602", "1701", "1801",
+                 "1802", "300", "2601")
+
+```
+
+```{r}
+# Combine all tracts then filter only Anchorage tracts
+combined_school_tracts <- unique(c(service_tracts, south_tracts, west_tracts, bartlett_tracts, 
+                                   dimond_tracts, east_tracts
+))
+atlas <- subset(atlas, state==2 & county==20 & as.character(tract) %in% combined_school_tracts)
+```
+
+
+We add the teacher quality metrics from the Alaska Department of Education.
+Source for school data: https://education.alaska.gov/compass/Home/AccountabilitySchoolsInDistrict?districtId=5
+```{r}
+# Make vectors for teacher quality scores
+teacher_quality <- list(
+  "Service" = c(sameschool= .597, field = .8027, inexperienced = .0473),
+  "South" = c(sameschool= .6833, field = .8901, inexperienced = .0177),
+  "West" = c(sameschool= .5632, field = .8163, inexperienced = .0245),
+  "Bartlett" = c(sameschool= .5775, field = .7986, inexperienced = .0144),
+  "Dimond" = c(sameschool= .4923, field = .9161, inexperienced = .0),
+  "East" = c(sameschool= .5795, field = .8020, inexperienced = .0189)
+)
+```
+
+
+Before populating the rows with teacher quality scores, we have to address the fact that some tracts are split by schools. So we will average the scores based on the two school zones the tract is in. We do this by first creating a new column "school" which will be a list of schools the tract is split by.
+
+```{r}
+# Create new list that will become column
+school_list <- vector("list", nrow(atlas))
+
+# Populate new column rows with lists of schools
+for (i in 1:nrow(atlas)) {
+  schools <- c()
+  
+  if (atlas$tract[i] %in% south_tracts) schools <- c(schools, "South")
+  if (atlas$tract[i] %in% west_tracts) schools <- c(schools, "West")
+  if (atlas$tract[i] %in% service_tracts) schools <- c(schools, "Service")
+  if (atlas$tract[i] %in% east_tracts) schools <- c(schools, "East")
+  if (atlas$tract[i] %in% bartlett_tracts) schools <- c(schools, "Bartlett")
+  if (atlas$tract[i] %in% dimond_tracts) schools <- c(schools, "Dimond")
+  
+  school_list[[i]] <- schools
+}
+
+atlas$school <- school_list
+
+# Create 3 new columns for teacher quality metrics
+atlas$sameschool <- NA
+atlas$field <- NA
+atlas$inexperienced <- NA
+
+# Populate those with scores. If the tract is split by two schools, take the average of the 
+#schools' scores.
+for (i in 1:nrow(atlas)) {
+  schools <- atlas$school[[i]]
+
+  if (length(schools) > 0) {
+    atlas$sameschool[i] <- mean(sapply(schools, function(s) teacher_quality[[s]]["sameschool"]))
+    atlas$field[i] <- mean(sapply(schools, function(s) teacher_quality[[s]]["field"]))
+    atlas$inexperienced[i] <- mean(sapply(schools, function(s) teacher_quality[[s]]["inexperienced"]))
+  }
+}
+```
+
+Lastly, we add in the economic connectedness score from the Social Capital (by school) dataset.
+```{r}
+# Create list of scores. This is easier to do by hand because the names of the schools in 
+# the Social Capital dataset are slightly different, e.g., it's "Service High" in Atlas but 
+# "Service HS" in Social Capital, so it's harder to write logic for. The column from the 
+# Social Capital dataset is "ec_own_ses_hs".
+ec_con <- list(
+  "Service" = 1.40677,
+  "South" = 0.70886999,
+  "West" = 1.31743,
+  "Bartlett" = 1.29399,
+  "Dimond" = 1.45863,
+  "East" = 1.27797
+)
+
+# Create 1 new column for Economic Connectedness Score
+atlas$ec_own_ses_hs <- NA
+
+# Populate that column with EC Score, again taking the average if the tract is 
+# split between schools
+for (i in 1:nrow(atlas)) {
+  schools <- atlas$school[[i]]
+
+  if (length(schools) > 0) {
+    atlas$ec_own_ses_hs[i] <- mean(sapply(schools, function(s) ec_con[[s]]), na.rm=TRUE)
+  }
+}
+```
+
+## EDA
+Here we make 3 scatterplots of kid income over the three teacher quality predictors
+
+```{r}
+ggplot(atlas, aes(x = sameschool, y = kfr_pooled_pooled_p25)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Child Income vs Teacher Retention",
+       x = "% Teachers Staying at Same School",
+       y = "Child Income Rank")
+
+```
+
+```{r}
+ggplot(atlas, aes(x = field, y = kfr_pooled_pooled_p25)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Child Income vs Teacher Specialty",
+       x = "% Teachers in Their Subject of Expertise",
+       y = "Child Income Rank")
+```
+
+```{r}
+ggplot(atlas, aes(x = inexperienced, y = kfr_pooled_pooled_p25)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Child Income vs Teacher Experience",
+       x = "% Teachers Inexperienced",
+       y = "Child Income Rank")
+```
+
+## Hypothesis Testing
+
+We check the mechanism, which is that better teachers prepare kids to be successful in college.
+```{r, warning=FALSE, message=FALSE}
+# Regress college degree attainment over teacher quality
+lm_mech <- lm(frac_coll_plus2010 ~ sameschool + field + inexperienced, data=atlas)
+
+# Output in html (looks cleaner than type="text")
+stargazer(lm_mech, type = "text", style = "ajps", omit.stat = c("f", "ser"))
+
+# Uncomment the block below for a cleaner table and the one used in the final report. 
+# It will output in html.
+# stargazer(lm_mech, type = "html", style = "ajps", omit.stat = c("f", "ser"), 
+# out="college_over_teachqual.html")
+```
+Next we'll plot a bar chart of Mean Kid Income vs Teacher Quality. We need to rank schools by Composite Teacher Quality first
+```{r}
+# Rank schools by multiplying the three Teacher Quality metrics, with equal weight
+# For Inexperienced, we subtract the score from 1 to reflect a positive quality 
+# (fewer inexperienced teachers is better)
+cat("Service: ", .597 * .8027 * (1-.0473), "\n")
+cat("South: ", .6833 * .8901 * (1-.0177), "\n")
+cat("West: ", .5632 * .8163 * (1-.0245), "\n")
+cat("Bartlett: ", .5775 * .7986 * (1-.0144), "\n")
+cat("Dimond: ", .4923 *.9161 * 1, "\n")
+cat("East: ", .5795 * .8020 * (1-.018), "\n")
+```
+Here we plot the bar chart.
+```{r, warning=FALSE, message=FALSE}
+# Need to address issue of tracts that are split by schools zones first. 
+# Create new df that separates tracts split by multiple school zones into different rows.
+atlas_flattened <- atlas %>%
+  unnest(school) %>%
+  group_by(school) %>%
+  summarise(school_kfr_pooled_pooled_p25 = mean(kfr_pooled_pooled_p25, na.rm=TRUE))
+           
+# Create a vector of schools ranked from highest to lowest composite Teacher Quality score
+ranked_schools <- c("South", "Service", "East", "Bartlett", "Dimond", "West")
+
+# Reorder schools in df by Teacher Quality score
+atlas_flattened$school <- factor(atlas_flattened$school, levels=ranked_schools)
+
+# Plot bar
+ggplot(data=atlas_flattened, aes(x=school, y=school_kfr_pooled_pooled_p25)) +
+  geom_col(fill = "lightblue") +
+  labs(title="Mean Kid Income by School", x="School", y="Mean Kid Income", 
+       caption="Note: Schools are ordered by decreasing composite teacher quality score.")
+
+```
+Next we plot Mean Kid Income, conditioning on race (white and Native American)
+```{r}
+# Add new columns in atlas_flattened for white and Native American Child Income means
+# Create new df for white
+atlas_flattened_white <- atlas %>%
+  unnest(school) %>%
+  group_by(school) %>%
+  summarise(mean_kfr_white_pooled_p25 = mean(kfr_white_pooled_p25, na.rm=TRUE))
+
+# New df for Native American
+atlas_flattened_natam <- atlas %>%
+  unnest(school) %>%
+  group_by(school) %>%
+  summarise(mean_kfr_natam_pooled_p25 = mean(kfr_natam_pooled_p25, na.rm=TRUE))
+
+# Reorder schools in dfs by Teacher Quality score
+atlas_flattened_white$school <- factor(atlas_flattened_white$school, levels=ranked_schools)
+atlas_flattened_natam$school <- factor(atlas_flattened_natam$school, levels=ranked_schools)
+
+# Plot then save image
+bar_white <- ggplot(data=atlas_flattened_white, aes(x=school, y=mean_kfr_white_pooled_p25)) +
+  geom_col(fill = "lightblue") +
+  ylim(0, 50) + 
+  labs(title="Mean Kid Income by School (White Children)", x="School", y="Mean Kid Income", 
+       caption="Note: Schools are ordered by decreasing composite teacher quality score.")
+
+bar_natam <- ggplot(data=atlas_flattened_natam, aes(x=school, y=mean_kfr_natam_pooled_p25)) +
+  geom_col(fill = "lightblue") +
+  ylim(0, 50) +
+  labs(title="Mean Kid Income by School (Native American Children)", x="School", 
+       y="Mean Kid Income")
+
+bar_white
+bar_natam
+
+# Output to image
+ggsave("mean_income_by_race.png", bar_white+bar_natam, width=14, height=6)
+```
+
+Next we regress Kid Income over Teacher Quality (all 3 metrics now, not the composite)
+```{r, warning=FALSE, message=FALSE}
+# Model regression
+lm_teachqual <- lm(kfr_pooled_pooled_p25 ~ sameschool + field + inexperienced, data=atlas)
+
+# Print
+stargazer(lm_teachqual, type = "text", style = "ajps", omit.stat = c("f", "ser"))
+
+# Uncomment below block for cleaner table in html.
+# stargazer(lm_teachqual, type = "html", style = "ajps", omit.stat = c("f", "ser"), 
+# out="income_over_teachqual.html")
+```
+
+Next we individually regress Kid Income over the demographic predictors—Single Parent Share, Economic Connectedness, and Share of White.
+
+```{r}
+# Regress Kid Income over single parent share
+lm_singleparent <- lm(kfr_pooled_pooled_p25 ~ singleparent_share2010, data=atlas)
+
+# Print coefficients
+coeftest(lm_singleparent, vcov = vcovHC(lm_singleparent, type="HC1"))
+```
+
+Run regression for economic connectedness now
+```{r}
+# Regress Kid Income over EC
+lm_ec <- lm(kfr_pooled_pooled_p25 ~ ec_own_ses_hs, data=atlas)
+
+# Print coefficients
+coeftest(lm_ec, vcov = vcovHC(lm_ec, type="HC1"))
+```
+
+Run regression for share of white
+```{r}
+# Regress Kid Income over Share of White
+lm_white <- lm(kfr_pooled_pooled_p25 ~ share_white2010, data=atlas)
+
+# Print coefficients
+coeftest(lm_white, vcov = vcovHC(lm_white, type="HC1"))
+```
+
+Regress over demographic traits, stepwise
+```{r, warning=FALSE, message=FALSE}
+# Create 3 different models for Kid Income over Teacher Quality + Demographic Predictors, 
+# incrementing by one demographic variable at a time
+model1 <- lm(kfr_pooled_pooled_p25 ~ sameschool + field + inexperienced + singleparent_share2010, 
+             data=atlas)
+model2 <- lm(kfr_pooled_pooled_p25 ~ sameschool + field + inexperienced + singleparent_share2010 
+             + ec_own_ses_hs, data=atlas)
+model3 <- lm(kfr_pooled_pooled_p25 ~ sameschool + field + inexperienced + singleparent_share2010 
+             + ec_own_ses_hs + share_white2010, data=atlas)
+
+# Plot in stargazer table
+stargazer(model1, model2, model3, 
+          type="text",
+          title= "Child Income Regressed on Teacher Quality and Community-Level Predictors",
+          dep.var.label="Mean Child Income",
+          column.labels=c("Teacher Quality + Single Parent", "+ SES", "+ Race"),
+          omit.stat = c("f", "ser")
+)
+
+# Uncomment block below for cleaner table, output to html.
+# stargazer(model1, model2, model3, 
+#           type="html",
+#           title= "Child Income Regressed on Teacher Quality and Community-Level Predictors",
+#           dep.var.label="Mean Child Income",
+#           column.labels=c("Teacher Quality + Single Parent", "+ SES", "+ Race"),
+#           omit.stat = c("f", "ser"),
+#           out="regression_table.html")
+```
+
+
+Random forest for feature importance
+```{r}
+# Set seed
+set.seed(135)
+
+# Random Forest from 1000 Bootstrapped Samples
+# Define predictors
+vars <- c("sameschool", "field", "inexperienced", "singleparent_share2010", "ec_own_ses_hs", 
+          "share_white2010")
+
+# Create random forest
+rf <- randomForest(reformulate(vars, "kfr_pooled_pooled_p25"), 
+                               ntree=1000, 
+                               mtry=6,
+                               importance=TRUE, 
+                               data=atlas)
+
+# Print
+importance(rf)
+varImpPlot(rf, type = 1, cex = 0.6, main="Variable Importance. Random Forest n=1000")
+```
+
+
+
+
+## Lockbox Testing:
+
+We'll re-run the hypothesis testing conditioning on race, white and Native American
+```{r}
+# Read in lockbox data
+lockbox <- read_dta("lockbox_atlas.dta")
+```
+
+Group tract by school zone. These variables are already defined above but re-stated here for convenience
+
+```{r}
+service_tracts <- c("2502", "2712", "2702", "2601", "2811", "2812", "2602", "2603", "300", 
+                    "2813")
+
+south_tracts <- c("2712", "2702", "2812", "2821", "2822", "2823")
+
+west_tracts <- c("1300", "2400", "1900", "2000", "1300", "1400", "1200", "1000", "902", 
+                 "901", "600", "500")
+
+bartlett_tracts <- c("400", "703", "801", "701", "702", "703", "802", "1702", "1731", "1701", 
+                     "1732")
+
+dimond_tracts <- c("2302", "2303", "2501", "2712")
+
+east_tracts <- c("600", "901", "801", "902", "1601", "802", "1500", "1602", "1701", "1801", 
+                 "1802", "300", "2601")
+
+```
+
+Filter Anchorage tracts from lockbox
+```{r}
+# Combine all tracts then filter only Anchorage tracts
+combined_school_tracts <- unique(c(service_tracts, south_tracts, west_tracts, bartlett_tracts, 
+                                   dimond_tracts, east_tracts
+))
+
+lockbox <- subset(lockbox, state==2 & county==20 & as.character(tract) %in% 
+                    combined_school_tracts)
+```
+
+
+We add the teacher quality metrics from the Alaska Department of Education (again done above but repeated here for convenience):
+```{r}
+# Make vectors for teacher quality scores
+teacher_quality <- list(
+  "Service" = c(sameschool= .597, field = .8027, inexperienced = .0473),
+  "South" = c(sameschool= .6833, field = .8901, inexperienced = .0177),
+  "West" = c(sameschool= .5632, field = .8163, inexperienced = .0245),
+  "Bartlett" = c(sameschool= .5775, field = .7986, inexperienced = .0144),
+  "Dimond" = c(sameschool= .4923, field = .9161, inexperienced = .0),
+  "East" = c(sameschool= .5795, field = .8020, inexperienced = .0189)
+)
+```
+
+Add Teacher Quality Score variables
+```{r}
+# Create new list that will become column
+school_list <- vector("list", nrow(lockbox))
+
+# Populate new column rows with lists of schools
+for (i in 1:nrow(lockbox)) {
+  schools <- c()
+  
+  if (lockbox$tract[i] %in% south_tracts) schools <- c(schools, "South")
+  if (lockbox$tract[i] %in% west_tracts) schools <- c(schools, "West")
+  if (lockbox$tract[i] %in% service_tracts) schools <- c(schools, "Service")
+  if (lockbox$tract[i] %in% east_tracts) schools <- c(schools, "East")
+  if (lockbox$tract[i] %in% bartlett_tracts) schools <- c(schools, "Bartlett")
+  if (lockbox$tract[i] %in% dimond_tracts) schools <- c(schools, "Dimond")
+  
+  school_list[[i]] <- schools
+}
+
+lockbox$school <- school_list
+
+# Create 3 new columns for teacher quality metrics
+lockbox$sameschool <- NA
+lockbox$field <- NA
+lockbox$inexperienced <- NA
+
+# Populate those with scores. If the tract is split by two schools, take the average 
+# of the schools' scores.
+for (i in 1:nrow(lockbox)) {
+  schools <- lockbox$school[[i]]
+
+  if (length(schools) > 0) {
+    lockbox$sameschool[i] <- 
+      mean(sapply(schools, function(s) teacher_quality[[s]]["sameschool"]))
+    lockbox$field[i] <- 
+      mean(sapply(schools, function(s) teacher_quality[[s]]["field"]))
+    lockbox$inexperienced[i] <- 
+      mean(sapply(schools, function(s) teacher_quality[[s]]["inexperienced"]))
+  }
+}
+```
+
+Add Economic Connectedness Score
+```{r}
+# Create list of scores. This is easier to do by hand because the names of the schools in 
+# the Social Capital dataset are slightly different, e.g., it's "Service High" in Atlas but 
+# "Service HS" in Social Capital, so it's harder to write logic for. The column from the 
+# Social Capital dataset is "ec_own_ses_hs".
+ec_con <- list(
+  "Service" = 1.40677,
+  "South" = 0.70886999,
+  "West" = 1.31743,
+  "Bartlett" = 1.29399,
+  "Dimond" = 1.45863,
+  "East" = 1.27797
+)
+
+# Create 1 new column for Economic Connectedness Score
+lockbox$ec_own_ses_hs <- NA
+
+# Populate that column with EC Score, again taking the average if the tract is split 
+# between schools
+for (i in 1:nrow(lockbox)) {
+  schools <- lockbox$school[[i]]
+
+  if (length(schools) > 0) {
+    lockbox$ec_own_ses_hs[i] <- mean(sapply(schools, function(s) ec_con[[s]]), na.rm=TRUE)
+  }
+}
+```
+
+
+Now we'll run our regression of Child Income over the Teacher Quality metrics 
+* No singleparent_share2010 or share_white2010 in lockbox
+```{r, warning=FALSE, message=FALSE}
+# Regress lockbox data
+lm_lockbox_ses <- lm(lockbox_kfr_pooled_pooled_p25 ~ sameschool + field + inexperienced +
+                       ec_own_ses_hs, data=lockbox)
+
+# Regress Atlas data
+lm_ses<- lm(kfr_pooled_pooled_p25 ~ sameschool + field + inexperienced + ec_own_ses_hs, 
+            data=atlas)
+
+# Combine with stargazer
+stargazer(lm_ses, lm_lockbox_ses,
+          type = "text",
+          style = "ajps",
+          title = "Regression Results: Atlas vs Lockbox",
+          column.labels = c("Atlas", "Lockbox"),
+          dep.var.label = "Mean Child Income",
+          omit.stat = c("f", "ser")
+)
+
+# Uncomment the block below for a cleaner table in html. 
+# stargazer(lm_ses, lm_lockbox_ses, 
+#           type = "html", 
+#           style = "ajps",
+#           title = "Regression Results: Atlas vs Lockbox",
+#           column.labels = c("Atlas", "Lockbox"),
+#           dep.var.label = "Mean Child Income",
+#           omit.stat = c("f", "ser"),
+#           out="lockbox_comparison.html")
+```
+
+Check for Mean Child Income differences across race by plotting bar graph.
+```{r}
+# Create a vector of schools ranked from highest to lowest composite Teacher Quality score
+ranked_schools <- c("South", "Service", "East", "Bartlett", "Dimond", "West")
+
+# Create new df for white (Need to address issue of tracts that are split by schools zones first.
+# Create new df that separates tracts split by multiple school zones into different rows.)
+lockbox_flattened_white <- lockbox %>%
+  unnest(school) %>%
+  group_by(school) %>%
+  summarise(lockbox_mean_kfr_white_pooled_p25 = mean(lockbox_kfr_white_pooled_p25, na.rm=TRUE))
+
+# New df for Native American
+lockbox_flattened_natam <- lockbox %>%
+  unnest(school) %>%
+  group_by(school) %>%
+  summarise(lockbox_mean_kfr_natam_pooled_p25 = mean(lockbox_kfr_natam_pooled_p25, na.rm=TRUE))
+
+# Reorder schools in dfs by Teacher Quality score
+lockbox_flattened_white$school <- factor(lockbox_flattened_white$school, levels=ranked_schools)
+lockbox_flattened_natam$school <- factor(lockbox_flattened_natam$school, levels=ranked_schools)
+
+# Plot then save image
+lockbox_bar_white <- ggplot(data=lockbox_flattened_white, aes(x=school, 
+                              y=lockbox_mean_kfr_white_pooled_p25)) +
+  geom_col(fill = "lightblue") +
+  coord_cartesian(ylim=c(0, 50)) +
+  labs(title="Mean Kid Income by School (White Children)", x="School", y="Mean Kid Income", 
+       caption="Note: Schools are ordered by decreasing composite teacher quality score.")
+
+lockbox_bar_natam <- ggplot(data=lockbox_flattened_natam, aes(x=school, 
+                              y=lockbox_mean_kfr_natam_pooled_p25)) +
+  geom_col(fill = "lightblue") +
+  ylim(0, 50) +
+  labs(title="Mean Kid Income by School (Native American Children)", x="School", 
+       y="Mean Kid Income")
+
+lockbox_bar_white
+lockbox_bar_natam
+
+ggsave("lockbox_mean_income_by_race.png", bar_white+bar_natam, width=14, height=6)
+```
+
+
