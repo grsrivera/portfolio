@@ -65,7 +65,7 @@ header {
 
 .navigation a {
     text-decoration: none;
-    padding: .5rem 0 .5rem 1rem;
+    padding: .5rem 1rem;
     color: white;
 }
 
@@ -151,6 +151,7 @@ footer {
         text-decoration: none;
         color: white;
         margin-left: 2rem;
+        padding: 0;
     }
 
     /* Projects changes */
