@@ -5,6 +5,8 @@ body {
     color: white;
     font-family: "Libre Franklin", san-serif;
     padding: 0 1rem;
+    /* Following style is so footer goes down for shorter project writeups */
+    min-height: 98.5vh; 
 }
 
 header {
@@ -119,7 +121,8 @@ iframe {
 footer {
     font-size: .5rem;
     color: rgba(229, 229, 229, 0.74);
-    margin-top: 10vh;
+    padding-top: 10vh;
+    margin-top: auto;
 }
 
 
@@ -127,6 +130,7 @@ footer {
 @media (min-width: 768px) {
     body {
         padding: 0 3rem;
+        min-height: 97.5vh; /* Pushes footer down */
     }
 
     /* Header changes */
@@ -162,7 +166,6 @@ footer {
     .r-chart {
         max-height: 65vh;
     }
-
 
 }
 

@@ -75,7 +75,10 @@ header {
 
 .about-section img {
     max-width: 100%;
-    object-fit: cover;
+    max-height: 400px;
+    aspect-ratio: 1 / 1;
+    /* object-fit: cover; */
+    object-fit: contain;
 }
 
 /* Projects Section */
@@ -141,10 +144,12 @@ a:active {
     width: 50%;
 }
 
+
+/* Footer section */
 footer {
     font-size: .5rem;
     color: rgba(229, 229, 229, 0.74);
-    margin-top: 10vh;
+    padding-top: 10vh;
 }
 
 
