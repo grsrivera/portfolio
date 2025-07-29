@@ -6,7 +6,7 @@ body {
     font-family: "Libre Franklin", san-serif;
     padding: 0 1rem;
     /* Following style is so footer goes down for shorter project writeups */
-    min-height: 98.5vh; 
+    min-height: 100dvh;
 }
 
 header {
@@ -72,6 +72,10 @@ header {
 }
 
 /* Writeup Section */
+main {
+    flex: 1;
+}
+
 hr {
     width: 100%;
 }
@@ -101,13 +105,6 @@ figcaption {
     text-align: center;
 }
 
-/* References section */
-.references li{
-    margin-bottom: 1rem;
-    overflow-wrap: break-word; 
-}
-
-/* Writeup section */
 iframe {
     width: 100%;       /* Full width of parent container */
     aspect-ratio: 16/11;
@@ -116,6 +113,14 @@ iframe {
     box-shadow: 0 0 16px rgba(255, 255, 255, 0.2);
     margin: 0 auto;
 }
+
+/* References section */
+.references li{
+    margin-bottom: 1rem;
+    overflow-wrap: break-word; 
+}
+
+
 
 /* Footer section */
 footer {
@@ -130,7 +135,6 @@ footer {
 @media (min-width: 768px) {
     body {
         padding: 0 3rem;
-        min-height: 97.5vh; /* Pushes footer down */
     }
 
     /* Header changes */
