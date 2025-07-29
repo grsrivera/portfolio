@@ -13,7 +13,7 @@ body {
 
 header {
     position: relative;
-    margin: 1rem 0;
+    margin: 1rem 0 3rem 0;
 }
 
 .header-container {
@@ -142,6 +142,10 @@ footer {
     }
 
     /* Header changes */
+    .header-container {
+        margin: 1rem 0;
+    }
+
     .hamburger {
         display: none;
     }
