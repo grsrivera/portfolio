@@ -4,19 +4,21 @@ body {
     background-color: black;
     color: white;
     font-family: "Libre Franklin", san-serif;
-    padding: 0 1rem;
+    padding: 1rem;
+    margin: 0;
 }
 
 header {
     position: relative;
+    margin: 1rem 0 3rem 0;
 }
 
 .header-container {
-    margin: 1rem 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
+
 
 .name {
     font-size: 1rem;
@@ -71,14 +73,13 @@ header {
     flex-direction: column;
     align-items: center;
     z-index: -2;
+    margin-bottom: 3rem;
 }
 
 .about-section img {
-    max-width: 100%;
-    max-height: 400px;
+    width: 100%;
     aspect-ratio: 1 / 1;
-    /* object-fit: cover; */
-    object-fit: contain;
+    object-fit: cover;
 }
 
 /* Projects Section */
@@ -94,6 +95,7 @@ header {
     display: grid;
     grid-template-columns: 1fr;
     gap: 3rem;
+    margin-bottom: 3rem;
 }
 
 .project img {
@@ -158,7 +160,7 @@ footer {
 /* Desktop View */
 @media (min-width: 768px) {
     body {
-        padding: 0 3rem;
+        padding: 1rem 3rem;
     }
 
     /* Header changes */
@@ -193,10 +195,15 @@ footer {
         margin: 3rem 0; 
     }
 
+    /* .about-section img {
+        width: 48%;
+    } */
+
     .about-section img {
         width: 48%;
+        max-height: 400px;
+        object-fit: contain;
     }
-
     .about-section p {
         width: 48%;
         line-height: 2rem;
