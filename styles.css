@@ -21,7 +21,7 @@ header {
 
 
 .name {
-    font-size: 1rem;
+    font-size: 1.5rem;
     font-weight: normal;
     margin: 0;
 }
@@ -80,6 +80,11 @@ header {
     width: 100%;
     aspect-ratio: 1 / 1;
     object-fit: cover;
+}
+
+.about-section p {
+    font-size: 1.5rem;
+    line-height: 2.4;
 }
 
 /* Projects Section */
@@ -164,6 +169,10 @@ footer {
     }
 
     /* Header changes */
+    header {
+        margin: 0 0 3rem 0;
+    }
+
     .header-container {
         margin: 1rem 0;
     }
