@@ -82,11 +82,6 @@ header {
     object-fit: cover;
 }
 
-.about-section p {
-    font-size: 1.5rem;
-    line-height: 2.4;
-}
-
 /* Projects Section */
 
 .projects-header {
@@ -213,8 +208,9 @@ footer {
         max-height: 400px;
         object-fit: contain;
     }
+
     .about-section p {
-        width: 48%;
+        font-size: 1.5rem;
         line-height: 2rem;
     }
 
