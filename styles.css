@@ -87,6 +87,7 @@ header {
 .projects-header {
     text-align: center;
 }
+
 .projects-header h2 {
     font-weight: normal;
 }
@@ -193,15 +194,13 @@ footer {
     }
 
     /* About me section changes */
+
     .about-section {
         flex-direction: row;
         justify-content: space-between;
+        gap: 2rem;
         margin: 3rem 0; 
     }
-
-    /* .about-section img {
-        width: 48%;
-    } */
 
     .about-section img {
         width: 48%;
