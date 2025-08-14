@@ -16,7 +16,6 @@ export default function AppRoutes() {
         <Route path="projects/geotagger" element={<GeotaggersProject />} />
         <Route path="projects/atlas" element={<AtlasProject />} />
 				<Route path="projects/hangman" element={<HangmanProject />} />
-        {/* <Route path="*" element={<NotFound />} /> */}
       </Route>
     </Routes>
   );
