@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+:root {
+  font-family: "Libre Franklin", sans-serif; 
+  background-color: black;
+  color: white;
+}
+
+p {
+  display: block;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  unicode-bidi: isolate;
+  line-height: normal;
+}
+
+h2 {
+  display: block;
+  font-size: 1.5em;
+  margin-block-start: 0.83em;
+  margin-block-end: 0.83em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  font-weight: bold;
+  unicode-bidi: isolate;
+}
+
+h3 {
+  display: block;
+  font-size: 1.17em;    
+  margin-top: 1em;      
+  margin-bottom: 1em;   
+  font-weight: bold;
+}
+.project-page a {
+  @apply underline text-yellow-400;
+}
+
+.project-page ul {
+  padding-left: 40px;
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.project-page ol {
+  padding-left: 40px;
+  list-style-type: decimal;
+  list-style-position: outside;
+}
+
+.project-page figure {
+  margin: 1rem auto;
+}
+
+.project-page img {
+  margin: 0 auto;
+}
+
+.project-page figcaption {
+  font-style: italic;
+  text-align: center;
+  line-height: 1.3rem;
+  margin-top: .5rem;
+}
+
