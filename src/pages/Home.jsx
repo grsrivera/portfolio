@@ -5,8 +5,6 @@ import { skills } from "../data/skills.js"
 import SkillCard from "../components/SkillCard"
 
 export default function Home() {
-  {/* come back to this about rerunning on renders*/}
-
   const projectCardArray = projects.map(obj => 
     <ProjectCard key={obj.id} id={obj.id} title={obj.title} desc={obj.desc} href={obj.href} img={obj.img} />
   )
