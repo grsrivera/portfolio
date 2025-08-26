@@ -7,10 +7,12 @@ import TownHallProject from "./pages/projects/TownHallProject"
 import GeotaggersProject from "./pages/projects/GeotaggersProject"
 import AtlasProject from "./pages/projects/AtlasProject"
 import HangmanProject from "./pages/projects/HangmanProject"
+import ScrollToTop from "./components/ScrollToTop"
 
 function App() {
   return (
     <BrowserRouter basename="/portfolio">
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
