@@ -1,4 +1,4 @@
-import { Link, NavLink, useLocation } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 
 export default function Header() {
 	const onHome = useLocation().pathname === "/"
@@ -37,7 +37,7 @@ export default function Header() {
 					md:max-h-none
 				"
 			>
-        <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className="px-4 py-2 md:px-0 ">Resume</a>
+        <a href="/portfolio/resume.pdf" target="_blank" rel="noopener noreferrer" className="px-4 py-2 md:px-0 ">Resume</a>
         <a href="https://grsrivera.github.io/" className="px-4 py-2 md:px-0 md:ml-8">Fun</a>
         <a href="mailto:gerald_ramir.rivera@tufts.edu" className="px-4 py-2 md:px-0 md:ml-8">Contact</a>
       </nav>
