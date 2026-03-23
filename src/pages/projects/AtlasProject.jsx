@@ -31,7 +31,7 @@ export default function AtlasProject() {
 
 			<h2>Write-Up</h2>
 			<p>
-				This memo investigates whether higher-quality high schools lead to greater income mobility. Using regression analysis and machine learning, the results showed that demographic characteristics of school zones, particularly racial composition, are the strongest predictors of child income. Still, there is strong evidence that school quality plays an important role. The memo concludes by outlining two quasi-experimental approaches — regression discontinuity design and difference-in-differences—that the city could use to more accurately estimate the causal effect of school quality on long-term outcomes. 
+				This memo investigates whether higher-quality high schools lead to greater income mobility. Using regression analysis and machine learning, the results showed that demographic characteristics of school zones, particularly racial composition, are the strongest predictors of child income. Still, there is strong evidence that school quality plays an important role. The memo concludes by outlining two quasi-experimental approaches — regression discontinuity design and difference-in-differences — that the city could use to more accurately estimate the causal effect of school quality on long-term outcomes. 
 			</p>
 
 			<h3>Background</h3>
@@ -57,7 +57,7 @@ export default function AtlasProject() {
 				<br />
 				<li><strong>The Social Capital Atlas: </strong>High school level economic connectedness score (ec_own_ses_hs) was used for the analysis.<sup>3</sup></li>
 				<br />
-				<li><strong>Alaska Department of Education: </strong>The state collects data along various dimensions to quantify the quality of schools. There are three variables used in the analysis by which the state measures teacher quality: percentage of teachers that have been at the school for 5 or more years (retention), percentage that are teaching in their field of study (field), and percentage that are in their first year of teaching (inexperienced).<sup>4</sup> In addition, the state shares geospatial boundary data for school zones, which were used to link Census tracts to school zones.<sup>5</sup> This comparison of the six Anchorage high schools.<br />
+				<li><strong>Alaska Department of Education: </strong>The state collects data along various dimensions to quantify the quality of schools. There are three variables used in the analysis by which the state measures teacher quality: percentage of teachers that have been at the school for 5 or more years (retention), percentage that are teaching in their field of study (field), and percentage that are in their first year of teaching (inexperienced).<sup>4</sup> In addition, the state shares geospatial boundary data for school zones, which were used to link Census tracts to school zones.<sup>5</sup><br />
 				<br />
 				One key assumption had to be made to combine the Alaska and Atlas datasets: The quality of Anchorage high schools remains consistent over time. The state began tracking school scores in 2017, roughly 18 years after the children in the Opportunity Atlas were in high school. The analysis would ideally use school quality data from the same period, but that information was unavailable. As a result, any changes in school quality over time may bias the estimated relationship between teacher quality and children’s income.</li>
 			</ul>
