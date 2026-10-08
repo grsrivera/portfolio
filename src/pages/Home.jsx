@@ -21,8 +21,7 @@ export default function Home() {
         <div>
             <p className="mt-0">Former Navy pilot and public policy graduate, now studying computer science.</p>
             <p>Let's build something together!</p>
-            <p className="text-base italic">"Put something silly in the world</p>
-            <p className="text-base italic">That ain't been there before"</p>
+            <p className="text-base italic">"Put something silly in the world\nThat ain't been there before"</p>
         </div>
       </section>
 
